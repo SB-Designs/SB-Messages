@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging App</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Simple Messaging App</h1>
+    <div id="onlineUsers">Online users: <span id="users"></span></div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type your message..." />
+    <button id="sendMessage">Send</button>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        const onlineUsers = document.getElementById("users");
+        const messages = document.getElementById("messages");
+        const messageInput = document.getElementById("messageInput");
+        const sendMessage = document.getElementById("sendMessage");
+
+        // Update online users
+        socket.on("onlineUsers", (users) => {
+            onlineUsers.textContent = users.length;
+        });
+
+        // Display messages
+        socket.on("message", ({ id, msg }) => {
+            const message = document.createElement("div");
+            message.textContent = `${id}: ${msg}`;
+            messages.appendChild(message);
+        });
+
+        // Send a message
+        sendMessage.addEventListener("click", () => {
+            const msg = messageInput.value;
+            if (msg.trim()) {
+                socket.emit("message", msg);
+                messageInput.value = "";
+            }
+        });
+    </script>
+</body>
+</html>
