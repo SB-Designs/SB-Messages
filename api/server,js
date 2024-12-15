@@ -1,0 +1,31 @@
+const { Server } = require("socket.io");
+
+let io;
+
+module.exports = (req, res) => {
+    if (!io) {
+        io = new Server(res.socket.server);
+        res.socket.server.io = io;
+
+        let onlineUsers = [];
+
+        io.on("connection", (socket) => {
+            onlineUsers.push(socket.id);
+
+            // Notify all users
+            io.emit("onlineUsers", onlineUsers);
+
+            // Handle incoming messages
+            socket.on("message", (msg) => {
+                io.emit("message", { id: socket.id, msg });
+            });
+
+            // Handle disconnection
+            socket.on("disconnect", () => {
+                onlineUsers = onlineUsers.filter((id) => id !== socket.id);
+                io.emit("onlineUsers", onlineUsers);
+            });
+        });
+    }
+    res.end();
+};
